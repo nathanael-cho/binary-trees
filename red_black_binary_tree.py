@@ -33,7 +33,6 @@ class RedBlackBinaryTree(SimpleBinaryTree):
             # Parent was the root -> node is the new root
             self.root = node
 
-
     # Rotate a node up and to the left
     # Note that we move the nodes themselves around and not just the values, and we don't change the colors
     def rotate_left(self, node):
@@ -129,6 +128,14 @@ class RedBlackBinaryTree(SimpleBinaryTree):
                 else:
                     current = current.right
 
+    def delete_from_parent(self, node):
+        # Assumes the existence of a parent when this call is made
+        parent = node.parent
+        if parent.left == node:
+            parent.left = None
+        else:
+            parent.right = None
+
     def handle_double_black(self, node):
         if not node.parent:
             # We are at the root, and double black is equivalent to black
@@ -141,7 +148,7 @@ class RedBlackBinaryTree(SimpleBinaryTree):
         sibling_left = sibling.left
         sibling_right = sibling.right
         if parent.red:
-            # Sibling must be black by invariant 4
+            # Then sibling must be black by invariant 4
             sibling.red = True
             parent.red = False
             if sibling_left.red and sibling_right.red:
@@ -174,9 +181,9 @@ class RedBlackBinaryTree(SimpleBinaryTree):
                 self.rotate_right(sibling)
             # Sibling is now at the level parent was at before and is the new double black
             self.handle_double_black(sibling)
-            # handle_double_black is agnostic of everything below sibling
-            # fix_tree_after_insert is agnostic of everything at and above sibling
-            # Thus, the order in which we do these two operations does not matter
+            # handle_double_black does not reorder the tree below sibling
+            # fix_tree_after_insert on the post-rotate left/right configuration does not reorder above sibling
+            # Thus, these two operations do not conflict with each other
             if node_is_left and sibling_left.red:
                 self.fix_tree_after_insert(sibling_left)
             if (not node_is_left) and sibling_right.red:
@@ -185,13 +192,8 @@ class RedBlackBinaryTree(SimpleBinaryTree):
     def handle_deletion_black_no_child_black_parent_black_sibling(self, node):
         parent = node.parent
         node_is_left = parent.left == node
-        # Delete the node
-        if node_is_left:
-            parent.left = None
-        else:
-            parent.right = None
+        self.delete_from_parent(node)
         sibling = parent.right if node_is_left else parent.left
-
         # If the sibling has children, they must be red and they must be childless to maintain invariant 5
         sibling_left = sibling.left
         sibling_right = sibling.right
@@ -231,9 +233,10 @@ class RedBlackBinaryTree(SimpleBinaryTree):
         # All non-root black nodes must have a sibling node by invariant 5
         sibling = parent.right if parent.left == node else parent.left
         if parent.red or sibling.red:
-            # The sibling must be black by invariant 4
             # Remove both parent and node from the tree
             self.remove_intermediate_generation(sibling)
+            # Here, either parent is red and sibling is black, or parent is black and sibling is red
+            # When we remove the parent, in either case it works with sibling now black
             sibling.red = False
             # To finish, we need to reinsert parent.value
             self.insert(parent.value)
@@ -254,16 +257,12 @@ class RedBlackBinaryTree(SimpleBinaryTree):
             else:
                 if not current.right:
                     if current.red:
-                        # If current.right is null and current is red, current must have no children
-                        parent = current.parent
-                        if parent.left == current:
-                            parent.left = None
-                        else:
-                            parent.right = None
+                        # If current.right is null and current is red, current must have no children, and current must have a parent
+                        self.delete_from_parent(current)
                     elif current.left:
-                        current_left = current.left
-                        current_left.red = False
-                        self.remove_intermediate_generation(current_left)
+                        # If current.right is null and current.left is not, it must be red and childless
+                        current.value = current.left.value
+                        self.delete_from_parent(current.left)
                     else:
                         self.handle_deletion_black_no_child(current)
                 else:
@@ -279,16 +278,11 @@ class RedBlackBinaryTree(SimpleBinaryTree):
                     # Here, from the loop above we know that current.left is null
                     if current.red:
                         # If current.left is null and current is red, current must have no children
-                        parent = current.parent
-                        if parent.left == current:
-                            parent.left = None
-                        else:
-                            parent.right = None
+                        self.delete_from_parent(current)
                     elif current.right:
-                        # If current.right exists, it must be red, otherwise we break the fifth invariant
-                        current_right = current.right
-                        current_right.red = False
-                        self.remove_intermediate_generation(current_right)
+                        # If current.right exists, it must be red and childless
+                        current.value = current.right.value
+                        self.delete_from_parent(current.right)
                     else:
                         self.handle_deletion_black_no_child(current)
                 return True
