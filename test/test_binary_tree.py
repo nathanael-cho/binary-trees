@@ -1,10 +1,31 @@
 import random
-import time
+from time import perf_counter
 
-from simple_binary_tree import SimpleBinaryTree
-from red_black_binary_tree import RedBlackBinaryTree
+from src.binary_tree import BinaryTree
+from src.simple_binary_tree import SimpleBinaryTree
+from src.red_black_binary_tree import RedBlackBinaryTree
 
-def binary_tree_general_functionality(tree):
+
+class TimerContextManager:
+    """Context manager to time a block of code"""
+
+    def __init__(self, name: str):
+        """Initialize the timer"""
+        self.name = name
+
+    def __enter__(self):
+        """Start the timer"""
+        self.start = perf_counter()
+        return self
+
+    def __exit__(self, *_):
+        """End the timer"""
+        self.end = perf_counter()
+        print(f'{self.name}: {self.end - self.start:.3f} seconds')
+
+
+def binary_tree_general_functionality(tree: BinaryTree):
+    """Test general functionality of a binary tree"""
     # Test inserting nodes into the tree
     assert tree.insert(2)
     assert tree.insert(3)
@@ -55,8 +76,9 @@ def binary_tree_general_functionality(tree):
     assert tree.list() == []
     assert not tree.delete(1)
 
-def binary_tree_big_tree_linear_insertion(tree):
-    # Big tree, linear insertion
+
+def binary_tree_big_tree_linear_insertion(tree: BinaryTree):
+    """Test a big tree with linear insertion"""
     n = 10000
     r = range(1, n + 1)
     for i in r:
@@ -70,9 +92,11 @@ def binary_tree_big_tree_linear_insertion(tree):
         assert tree.delete(i)
         assert not tree.lookup(i)
 
-def binary_tree_big_tree_random_insertion(tree):
+
+def binary_tree_big_tree_random_insertion(tree: BinaryTree):
+    """Test a big tree with random insertion"""
     # For debugging, we know what seed caused an error
-    random.seed(2)
+    random.seed(1)
 
     # Big tree, random insertion
     population = 1000000
@@ -89,34 +113,38 @@ def binary_tree_big_tree_random_insertion(tree):
         assert tree.delete(i)
         assert not tree.lookup(i)
 
-def timer_decorator(name):
-    def timer(f):
-        start = time.time()
-        f()
-        end = time.time()
-        print(f"{name}: {end - start:.02f}s")
-    return timer
 
-# @timer_decorator("Simple Binary Tree, General Functionality")
 def test_simple_binary_tree_general_functionality():
-    binary_tree_general_functionality(SimpleBinaryTree())
+    """Test the general functionality of a simple binary tree"""
+    with TimerContextManager("Simple Binary Tree, General Functionality"):
+        binary_tree_general_functionality(SimpleBinaryTree())
 
-@timer_decorator("Simple Binary Tree, Big Tree Linear Insertion")
+
 def test_simple_binary_tree_big_tree_linear_insertion():
-    binary_tree_big_tree_linear_insertion(SimpleBinaryTree())
+    """Test a big tree with linear insertion in a simple binary tree"""
+    with TimerContextManager("Simple Binary Tree, Big Tree Linear Insertion"):
+        binary_tree_big_tree_linear_insertion(SimpleBinaryTree())
 
-@ timer_decorator("Simple Binary Tree, Big Tree Random Insertion")
+
 def test_simple_binary_tree_big_tree_random_insertion():
-    binary_tree_big_tree_random_insertion(SimpleBinaryTree())
+    """Test a big tree with random insertion in a simple binary tree"""
+    with TimerContextManager("Simple Binary Tree, Big Tree Random Insertion"):
+        binary_tree_big_tree_random_insertion(SimpleBinaryTree())
 
-# @timer_decorator("Red Black Binary Tree, General Functionality")
+
 def test_red_black_binary_tree_general_functionality():
-    binary_tree_general_functionality(RedBlackBinaryTree())
+    """Test the general functionality of a red-black binary tree"""
+    with TimerContextManager("Red Black Binary Tree, General Functionality"):
+        binary_tree_general_functionality(RedBlackBinaryTree())
 
-@timer_decorator("Red Black Binary Tree, Big Tree Linear Insertion")
+
 def test_red_black_binary_tree_big_tree_linear_insertion():
-    binary_tree_big_tree_linear_insertion(RedBlackBinaryTree())
+    """Test a big tree with linear insertion in a red-black binary tree"""
+    with TimerContextManager("Red Black Binary Tree, Big Tree Linear Insertion"):
+        binary_tree_big_tree_linear_insertion(RedBlackBinaryTree())
 
-@ timer_decorator("Red Black Binary Tree, Big Tree Random Insertion")
+
 def test_red_black_binary_tree_big_tree_random_insertion():
-    binary_tree_big_tree_random_insertion(RedBlackBinaryTree())
+    """Test a big tree with random insertion in a red-black binary tree"""
+    with TimerContextManager("Red Black Binary Tree, Big Tree Random Insertion"):
+        binary_tree_big_tree_random_insertion(RedBlackBinaryTree())

@@ -1,4 +1,6 @@
-from simple_binary_tree import SimpleBinaryTree
+from typing import Optional
+
+from .binary_tree import BinaryTree, BinaryTreeNode
 
 # Implementation of a red-black binary tree
 
@@ -9,18 +11,23 @@ from simple_binary_tree import SimpleBinaryTree
 #  4. If a node is red, then its parent is black
 #  5. Any path from a node to any of its descendant null nodes contains the same number of black nodes
 
-class RedBlackBinaryTreeNode():
-    def __init__(self, value) -> None:
-        self.value = value
-        self.red = True
-        self.parent = None
-        self.left = None
-        self.right = None
+class RedBlackBinaryTreeNode(BinaryTreeNode):
+    """Node of a red-black binary tree"""
+
+    def __init__(self, value: int) -> None:
+        self.value: int = value
+        self.red: bool = True
+        self.parent: Optional[RedBlackBinaryTreeNode] = None
+        self.left: Optional[RedBlackBinaryTreeNode] = None
+        self.right: Optional[RedBlackBinaryTreeNode] = None
 
 # In this implementation we do not allow duplicate values
-class RedBlackBinaryTree(SimpleBinaryTree):
+class RedBlackBinaryTree(BinaryTree):
+    """Red-black binary tree"""
+
     # Remove node's parent and plug the node into its grandparent
-    def remove_intermediate_generation(self, node):
+    def remove_intermediate_generation(self, node: RedBlackBinaryTreeNode):
+        """Remove node's parent and plug the node into its grandparent"""
         parent = node.parent
         grandparent = parent.parent
         node.parent = grandparent
@@ -33,9 +40,12 @@ class RedBlackBinaryTree(SimpleBinaryTree):
             # Parent was the root -> node is the new root
             self.root = node
 
-    # Rotate a node up and to the left
-    # Note that we move the nodes themselves around and not just the values, and we don't change the colors
-    def rotate_left(self, node):
+    def rotate_left(self, node: RedBlackBinaryTreeNode):
+        """
+        Rotate a node up and to the left
+
+        Note that we move the nodes themselves around and not just the values, and we don't change the colors
+        """
         assert node.parent.right == node
         parent = node.parent
         self.remove_intermediate_generation(node)
@@ -46,9 +56,12 @@ class RedBlackBinaryTree(SimpleBinaryTree):
         if node_left:
             node_left.parent = parent
 
-    # Rotate a node up and to the right
-    # Note that we move the nodes themselves around and not just the values
-    def rotate_right(self, node):
+    def rotate_right(self, node: RedBlackBinaryTreeNode):
+        """
+        Rotate a node up and to the right
+
+        Note that we move the nodes themselves around and not just the values, and we don't change the colors
+        """
         assert node.parent.left == node
         parent = node.parent
         self.remove_intermediate_generation(node)
@@ -60,7 +73,8 @@ class RedBlackBinaryTree(SimpleBinaryTree):
             node_right.parent = parent
 
 
-    def fix_tree_after_insert(self, node):
+    def fix_tree_after_insert(self, node: RedBlackBinaryTreeNode):
+        """Fix the tree after inserting a node"""
         # If node is not red, no action is needed
         if not node.red:
             return
@@ -101,7 +115,12 @@ class RedBlackBinaryTree(SimpleBinaryTree):
                 self.rotate_left(parent)
                 parent.red = False
 
-    def insert(self, value):
+    def insert(self, value: int) -> bool:
+        """
+        Insert the value into the tree and return whether the insertion is successful
+        
+        Duplicate values are not inserted
+        """
         node_to_insert = RedBlackBinaryTreeNode(value)
         if not self.root:
             self.root = node_to_insert
@@ -128,7 +147,8 @@ class RedBlackBinaryTree(SimpleBinaryTree):
                 else:
                     current = current.right
 
-    def delete_from_parent(self, node):
+    def delete_from_parent(self, node: RedBlackBinaryTreeNode):
+        """Delete a node from its parent"""
         # Assumes the existence of a parent when this call is made
         parent = node.parent
         if parent.left == node:
@@ -136,7 +156,8 @@ class RedBlackBinaryTree(SimpleBinaryTree):
         else:
             parent.right = None
 
-    def handle_double_black(self, node):
+    def handle_double_black(self, node: RedBlackBinaryTreeNode):
+        """Handle a double black node"""
         if not node.parent:
             # We are at the root, and double black is equivalent to black
             return
@@ -189,7 +210,8 @@ class RedBlackBinaryTree(SimpleBinaryTree):
             if (not node_is_left) and sibling_right.red:
                 self.fix_tree_after_insert(sibling_right)
 
-    def handle_deletion_black_no_child_black_parent_black_sibling(self, node):
+    def handle_deletion_black_no_child_black_parent_black_sibling(self, node: RedBlackBinaryTreeNode):
+        """Handle the case where a black node with no children has a black parent and a black sibling"""
         parent = node.parent
         node_is_left = parent.left == node
         self.delete_from_parent(node)
@@ -223,8 +245,8 @@ class RedBlackBinaryTree(SimpleBinaryTree):
             sibling.red = True
             self.handle_double_black(parent)                
 
-    # Here, node is a black node with no children
-    def handle_deletion_black_no_child(self, node):
+    def handle_deletion_black_no_child(self, node: RedBlackBinaryTreeNode):
+        """Handle the case where a black node with no children is deleted"""
         # If it's a single node with no children and no parent, it's the root and we reset the tree
         if not node.parent:
             self.root = None
@@ -242,9 +264,9 @@ class RedBlackBinaryTree(SimpleBinaryTree):
             self.insert(parent.value)
         else:
             self.handle_deletion_black_no_child_black_parent_black_sibling(node)
-        
-    # Deletes value in the tree if it exists and returns whether the element is found
-    def delete(self, value):
+
+    def delete(self, value: int) -> bool:
+        """Delete the value from the tree and return whether the element is found"""
         if not self.root:
             return False
         current = self.root

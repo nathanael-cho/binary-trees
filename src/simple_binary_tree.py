@@ -1,20 +1,23 @@
-from binary_tree import BinaryTree
+from .binary_tree import BinaryTree, BinaryTreeNode
+
 
 # Implementation of a simple binary tree
 
-class SimpleBinaryTreeNode():
-    def __init__(self, value) -> None:
-        self.value = value
-        self.left = None
-        self.right = None
+class SimpleBinaryTreeNode(BinaryTreeNode):
+    """Node for a simple binary tree"""
+    pass
+
 
 # In this implementation we do not allow duplicate values
 class SimpleBinaryTree(BinaryTree):
-    def __init__(self):
-        self.root = None
+    """Simple binary tree"""
 
-    # Inserts the value if it does not already exist and returns whether the insertion is successful
-    def insert(self, value):
+    def insert(self, value: int) -> bool:
+        """
+        Insert a value into the tree and return whether it was inserted
+        
+        Duplicate values are not allowed
+        """
         node_to_insert = SimpleBinaryTreeNode(value)
 
         if not self.root:
@@ -38,22 +41,8 @@ class SimpleBinaryTree(BinaryTree):
                 else:
                     current = current.right
 
-    def lookup(self, value):
-        if not self.root:
-            return False
-        else:
-            current = self.root
-            while current:
-                if value == current.value:
-                    return True
-                elif value < current.value:
-                    current = current.left
-                else:
-                    current = current.right
-            return False
-        
-    # Deletes the value in the tree if it exists and returns whether the element is found
-    def delete(self, value):
+    def delete(self, value: int) -> bool:
+        """Delete a value from the tree and return whether it was found"""
         if not self.root:
             return False
 
@@ -95,21 +84,3 @@ class SimpleBinaryTree(BinaryTree):
 
         # Value not found in the tree
         return False
-    
-    # This implementation assumes no duplicates in the binary tree
-    def list(self):
-        to_return = []
-        node_stack = [self.root]
-        visited = set()
-        while node_stack:
-            node = node_stack.pop()
-            if not node:
-                continue
-            if node.value not in visited:
-                visited.add(node.value)
-                node_stack.append(node.right)
-                node_stack.append(node)
-                node_stack.append(node.left)
-            else:
-                to_return.append(node.value)
-        return to_return
