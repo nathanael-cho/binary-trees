@@ -7,8 +7,8 @@ from .binary_tree import BinaryTree, BinaryTreeNode
 # Invariants of a red black tree:
 #  1. Every node is either red or black
 #  2. The root of the tree is always black
-#  3. All leaves are null and they are black
-#  4. If a node is red, then its parent is black
+#  3. All leaves (the terminals, left and right, of the tree's branches) are null and they are black
+#  4. If a node is red, then its parent is black; similarly, its children must also be black
 #  5. Any path from a node to any of its descendant null nodes contains the same number of black nodes
 
 class RedBlackBinaryTreeNode(BinaryTreeNode):
@@ -24,6 +24,8 @@ class RedBlackBinaryTreeNode(BinaryTreeNode):
 # In this implementation we do not allow duplicate values
 class RedBlackBinaryTree(BinaryTree):
     """Red-black binary tree"""
+
+    root: Optional[RedBlackBinaryTreeNode]
 
     # Remove node's parent and plug the node into its grandparent
     def remove_intermediate_generation(self, node: RedBlackBinaryTreeNode):
@@ -180,6 +182,7 @@ class RedBlackBinaryTree(BinaryTree):
                     self.rotate_right(sibling)
                     sibling_left.red = False
             elif sibling_left.red:
+                # Insert is agnostic of any descendants of the node, so we can call it here and immediately below
                 self.fix_tree_after_insert(sibling_left)
             else:
                 self.fix_tree_after_insert(sibling_right)
@@ -191,7 +194,7 @@ class RedBlackBinaryTree(BinaryTree):
                 self.rotate_left(sibling)
             else:
                 self.rotate_right(sibling)
-            # We've now set this up as a case where node is double black and parent is red, which is solved above
+            # We've now set this up as a case where node is double black and parent is red, which is fully solved above
             self.handle_double_black(node)
         # Sibling is black and parent is black
         else:
@@ -201,10 +204,10 @@ class RedBlackBinaryTree(BinaryTree):
             else:
                 self.rotate_right(sibling)
             # Sibling is now at the level parent was at before and is the new double black
+            # We've pushed the double black node up one level
             self.handle_double_black(sibling)
-            # handle_double_black does not reorder the tree below sibling
-            # fix_tree_after_insert on the post-rotate left/right configuration does not reorder above sibling
-            # Thus, these two operations do not conflict with each other
+            # handle_double_black does not reorder the tree below sibling, and sibling stays black
+            # Thus, we can use fix_tree_after_insert to clean up any stacked reds below sibling
             if node_is_left and sibling_left.red:
                 self.fix_tree_after_insert(sibling_left)
             if (not node_is_left) and sibling_right.red:
@@ -243,7 +246,7 @@ class RedBlackBinaryTree(BinaryTree):
         # The sibling has no children, so we make it red and consider the parent double black
         else:
             sibling.red = True
-            self.handle_double_black(parent)                
+            self.handle_double_black(parent)
 
     def handle_deletion_black_no_child(self, node: RedBlackBinaryTreeNode):
         """Handle the case where a black node with no children is deleted"""
@@ -260,7 +263,7 @@ class RedBlackBinaryTree(BinaryTree):
             # Here, either parent is red and sibling is black, or parent is black and sibling is red
             # When we remove the parent, in either case it works with sibling now black
             sibling.red = False
-            # To finish, we need to reinsert parent.value
+            # To finish, we need to reinsert parent.value, and insert maintains all the invariants
             self.insert(parent.value)
         else:
             self.handle_deletion_black_no_child_black_parent_black_sibling(node)
@@ -291,11 +294,12 @@ class RedBlackBinaryTree(BinaryTree):
                     switch = current.right
                     while switch.left:
                         switch = switch.left
-                    # Here, switch contains the lowest value greater than current, and we switch the *values*
+                    # Here, switch contains the lowest value greater than current, and we switch the values
+                    # Note that we do not switch the nodes themselves
                     x = switch.value
                     switch.value = current.value
                     current.value = x
-                    # Then we set current to point to the node switch was at
+                    # Then we set current to point to the node switch was at, which now contains the value we want to delete
                     current = switch
                     # Here, from the loop above we know that current.left is null
                     if current.red:

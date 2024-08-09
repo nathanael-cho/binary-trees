@@ -1,3 +1,5 @@
+from typing import Optional
+
 from .binary_tree import BinaryTree, BinaryTreeNode
 
 
@@ -11,6 +13,8 @@ class SimpleBinaryTreeNode(BinaryTreeNode):
 # In this implementation we do not allow duplicate values
 class SimpleBinaryTree(BinaryTree):
     """Simple binary tree"""
+
+    root: Optional[SimpleBinaryTreeNode]
 
     def insert(self, value: int) -> bool:
         """
