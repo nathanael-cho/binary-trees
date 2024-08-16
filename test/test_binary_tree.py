@@ -1,6 +1,7 @@
 import random
 from time import perf_counter
 
+from src.avl_tree import AVLTree
 from src.binary_tree import BinaryTree
 from src.simple_binary_tree import SimpleBinaryTree
 from src.red_black_binary_tree import RedBlackBinaryTree
@@ -148,3 +149,9 @@ def test_red_black_binary_tree_big_tree_random_insertion():
     """Test a big tree with random insertion in a red-black binary tree"""
     with TimerContextManager("Red Black Binary Tree, Big Tree Random Insertion"):
         binary_tree_big_tree_random_insertion(RedBlackBinaryTree())
+
+
+def test_avl_tree_general_functionality():
+    """Test the general functionality of an AVL tree"""
+    with TimerContextManager("AVL Tree, General Functionality"):
+        binary_tree_general_functionality(AVLTree())
